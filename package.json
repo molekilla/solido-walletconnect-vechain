@@ -1,0 +1,42 @@
+{
+  "name": "solido-walletconnect-vechain",
+  "version": "0.3.0",
+  "description": "A WalletConnect implementation for VeChain",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "jasmine-ts \"spec/**/*.spec.ts\"",
+    "prepublishOnlya": "npm run build",
+    "build": "rm -rf lib && tsc -p .",
+    "lint": "eslint --fix ."
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jasmine": "^3.4.2",
+    "@types/node": "^12.7.12",
+    "@typescript-eslint/eslint-plugin": "^2.3.3",
+    "@vechain/connex": "^1.3.0",
+    "eslint": "^6.5.1",
+    "jasmine": "^3.5.0",
+    "jasmine-ts": "^0.3.0",
+    "nodemon": "^1.19.3",
+    "ts-node": "^8.5.4",
+    "typescript": "^3.7.4",
+    "@decent-bet/solido": "^1.1.6",
+    "@decent-bet/solido-provider-connex": "1.2.4"
+  },
+  "dependencies": {
+    "@walletconnect/browser": "^1.0.0-beta.42",
+    "@walletconnect/core": "^1.0.0-beta.42",
+    "@walletconnect/types": "^1.0.0-beta.42",
+    "rxjs": "^6.5.4",
+    "thor-devkit": "^1.1.1"
+  },
+  "peerDependencies": {
+    "@decent-bet/solido": "^1.1.4"
+  }
+}
