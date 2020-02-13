@@ -100,6 +100,172 @@ WalletConnect requires users to scan a QR image, which contains  session info an
 
 ```
 
-## Signing
+## Signing - Dapp
 
 Dapp requires only that each contract uses `solido-provider-wallet` as plugin. 
+
+
+## Signing - Wallet
+
+`SignTransaction` is a method that has either Connex or Thorify to sign a transaction clause sent from Dapp. For other platforms, use available Vechain libraries or use Trust wallet signing library.
+
+```typescript
+  handleBarCodeScanned = async ({ type, data }) => {
+    const { address } = this.state;
+    this.setState({ scanned: true });
+    const uri = typeof data === "string" ? data : "";
+    if (uri) {
+      const wc = (global as any).walletConnect as SetupWalletConnect;
+
+      // Initialize WalletConnect
+      wc.initialize(data);
+
+      // Subscribe to events and return an observable
+      const evt$ = wc.events();
+
+      evt$.subscribe(async (evt: any) => {
+        switch (evt.type) {
+          case 'session_request':
+            this.props.navigation.navigate('SessionRequest', {
+              address,
+            });
+            break;
+          case 'eth_signTransaction':
+            await  this.signTransaction(evt.payload.params[0]);
+            break;
+          default:
+            break;
+        }
+      });
+    }
+  };
+
+```
+
+## WalletConnect Helper
+
+```typescript
+import WalletConnect from "@walletconnect/react-native";
+import { Observable, Subject } from 'rxjs';
+
+
+/**
+ * Initializes wallet connect
+ */
+export class SetupWalletConnect {
+    eventSubject: Subject<any> = new Subject<any>();
+    walletConnector: WalletConnect;
+
+    constructor() {
+    }
+
+    async approveRequest(address: string) {
+        await this.walletConnector.approveRequest({
+            id: 1,
+            result: address,
+        });
+    }
+
+    async approveRequest_SignTx(address: string, result: any) {
+        await this.walletConnector.approveRequest({
+            id: 1,
+            result,
+        });
+    }
+
+    async rejectRequest(address: string) {
+        await this.walletConnector.rejectRequest({})
+    }
+
+    async approveSession(address: string) {
+        await this.walletConnector.approveSession({
+            chainId: 1,
+            accounts: [address]
+        });
+    }
+
+    async rejectSession(address: string) {
+        await this.walletConnector.rejectSession();
+    }
+
+    events(): Observable<any> {
+        this.walletConnector.on("session_request", (error, payload) => {
+            if (error) {
+                throw error;
+            }
+
+            this.eventSubject.next({
+                type: 'session_request',
+                payload: payload
+            });
+        });
+
+        this.walletConnector.on("session_update", (error, payload) => {
+            if (error) {
+                throw error;
+            }
+
+            this.eventSubject.next({
+                type: 'session_update',
+                payload: payload
+            });
+        });
+
+        this.walletConnector.on("eth_signTransaction", (error, payload) => {
+            if (error) {
+                throw error;
+            }
+
+            this.eventSubject.next({
+                type: 'eth_signTransaction',
+                payload: payload
+            });
+
+        });
+
+        this.walletConnector.on("connect", (error, payload) => {
+            if (error) {
+                throw error;
+            }
+
+            this.eventSubject.next({
+                type: 'connect',
+                payload: payload
+            });
+            
+        });
+
+        this.walletConnector.on("disconnect", (error, payload) => {
+            if (error) {
+                throw error;
+            }
+
+            this.eventSubject.next({
+                type: 'disconnect',
+                payload: payload
+            });
+        });
+        return this.eventSubject.asObservable();
+    }
+
+    initialize(uri: string) {
+        try {
+            this.walletConnector = new WalletConnect({
+                uri
+            }, {
+                clientMeta: {
+                    description: "WalletConnect Developer App",
+                    url: "https://walletconnect.org",
+                    icons: ["https://walletconnect.org/walletconnect-logo.png"],
+                    name: "WalletConnect",
+                    ssl: true,
+                }
+            });
+
+        } catch (error) {
+            throw error;
+        }
+    }
+}
+
+```
