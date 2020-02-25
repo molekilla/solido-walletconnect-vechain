@@ -51,7 +51,7 @@ export class WalletPlugin extends ConnexPlugin implements SolidoContract {
   ): Promise<SolidoSigner> {
     const payload = methodCall.asClause(...args);
     payload.from = this.defaultAccount;
-    const signer = new WalletSigner(<WalletTransaction>payload, this.walletconnect);
+    const signer = new WalletSigner(this.defaultAccount, <WalletTransaction>payload, this.walletconnect);
     return Promise.resolve(signer);
   }
 
